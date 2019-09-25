@@ -11,7 +11,7 @@ import pyigl as igl
 import array
 import time
 
-HOST = 'localhost'                 # Symbolic name meaning all available interfaces
+HOST = '131.220.7.77'                 # Symbolic name meaning all available interfaces
 PORT = 50008              # Arbitrary non-privileged port
 
 def worker(viewer,lock,s):
@@ -32,10 +32,10 @@ def worker(viewer,lock,s):
             data = ''.join(slist)
             temp = list(data)
 
-            isempty = viewer.data().V.rows() == 0
-            viewer.data().deserialize(temp)
-            if isempty and viewer.data().V.rows() != 0:
-                viewer.core.align_camera_center(viewer.data().V,viewer.data().F)
+            isempty = viewer.data(0).V.rows() == 0
+            viewer.data(0).deserialize(temp)
+            if isempty and viewer.data(0).V.rows() != 0:
+                viewer.core().align_camera_center(viewer.data(0).V,viewer.data(0).F)
 
             lock.release()
 
@@ -45,15 +45,19 @@ def worker(viewer,lock,s):
 
 class TCPViewer(igl.glfw.Viewer):
     def launch(self):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((HOST, PORT))
-            ser = self.data().serialize()
+#        try:
+        if True:
+            print ("create")
+            print ("Host ", HOST)
+            print ("PORT", PORT)
+            s = socket.create_connection((HOST, PORT))
+#            s.connect((HOST, PORT))
+            ser = self.data(0).serialize()
             a = array.array('u', ser)
             s.sendall(a)
             s.close()
-        except:
-            print("Failed to open socket, is tcpviewer running?")
+#        except:
+#            print("Failed to open socket, is tcpviewer running?")
 
 if __name__ == "__main__": # The main script is a server
 
@@ -73,7 +77,7 @@ if __name__ == "__main__": # The main script is a server
     t.setDaemon(True)
     t.start()
 
-    viewer.core.is_animating = True
+    viewer.core().is_animating = True
     # viewer.data().dirty = int(0x03FF)
 
     viewer.launch_init(True,False)
